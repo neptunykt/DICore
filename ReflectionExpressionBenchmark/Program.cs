@@ -30,10 +30,18 @@ BenchmarkRunner.Run<ExpressionBenchmarkTest>();
             [Benchmark]
             public void WithDirect()
             {
-               object service = new Qux1();
+               object service = DirectEx.GetDelegate();
 
             }
         }
+
+            public static class DirectEx
+            {
+                public static Func<object> GetDelegate()
+                {
+                    return () => new Qux1();
+                }    
+            }
 
         public static class ReflectionEx
         {

@@ -106,9 +106,8 @@ internal sealed class CallSiteRuntimeResolver : CallSiteVisitor<RuntimeResolverC
             // on another thread without causing the deadlock because we
             // always know that we are going to wait the other thread to finish before
             // releasing the lock
-            /* для проверки id потока
-            var name = Thread.CurrentThread.ManagedThreadId;
-            */
+            // для проверки id потока
+            // var name = Thread.CurrentThread.ManagedThreadId;
             if ((context.AcquiredLocks & lockType) == 0)
             {
                 Monitor.Enter(sync, ref lockTaken);
