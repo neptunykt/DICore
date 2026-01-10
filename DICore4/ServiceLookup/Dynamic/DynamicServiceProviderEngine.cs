@@ -16,13 +16,15 @@ internal sealed class DynamicServiceProviderEngine : CompiledServiceProviderEngi
 
     public override Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite)
     {
+        // Подсчет числа вызовов через замыкание
         int callCount = 0;
         return scope =>
         {
             // Resolve the result before we increment the call count, this ensures that singletons
             // won't cause any side effects during the compilation of the resolve function.
+            // здесь мы в любом случае получаем объект
             var result = CallSiteRuntimeResolver.Instance.Resolve(callSite, scope);
-
+            // если это второй вызов, заменяем делегат
             if (Interlocked.Increment(ref callCount) == 2)
             {
                 // Don't capture the ExecutionContext when forking to build the compiled version of the
@@ -31,6 +33,8 @@ internal sealed class DynamicServiceProviderEngine : CompiledServiceProviderEngi
                     {
                         try
                         {
+                            // мы знаем что сюда заходит только один вызов (второй), другие вызовы сюда не заходят
+                            // они получают старый делегат пока делегат ServiceAccessor на основе Expression не подменится
                             _serviceProvider.ReplaceServiceAccessor(callSite, base.RealizeService(callSite));
                         }
                         catch (Exception ex)
@@ -42,7 +46,7 @@ internal sealed class DynamicServiceProviderEngine : CompiledServiceProviderEngi
                     },
                     null);
             }
-
+            // возврат результата
             return result;
         };
     }

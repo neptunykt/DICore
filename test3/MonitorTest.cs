@@ -19,7 +19,10 @@ public class MonitorTest
         for (var j = 10; j > 0; j--)
         {
             var number = j;
-            var thread = new Thread(() => { _testOutputHelper.WriteLine($"ThreadId: {Thread.CurrentThread.ManagedThreadId} j: {number} Value: {CalculateFactorial(10, 0).ToString()}"); });
+            // Запуск в 10 потоках расчета факториала
+            var thread = new Thread(() => 
+            { _testOutputHelper.WriteLine($"ThreadId: {Thread.CurrentThread.ManagedThreadId} " + 
+                                          $"j: {number} Value: {CalculateFactorial(10, 0).ToString()}"); });
             thread.Start();
         }
         Thread.Sleep(10000);
@@ -38,12 +41,11 @@ public class MonitorTest
     {
         bool lockTaken = false;
         object sync = Resolved;
-        // Блокировка только на верхнем уровне для contextLock = 0
+        // Блокировка только на верхнем уровне для contextLock = 0 для каждого потока
         if (contextLock == 0)
         {
             Monitor.Enter(sync, ref lockTaken);
         }
-
         try
         {
             // Критическая область
@@ -52,18 +54,15 @@ public class MonitorTest
             {
                 return resolved;
             }
-
             if (n <= 1)
             {
-                _testOutputHelper.WriteLine(
-                    $"Value: 1, resolved by ThreadId: {Thread.CurrentThread.ManagedThreadId.ToString()}");
+                _testOutputHelper.WriteLine($"Value: 1, resolved by ThreadId: {Thread.CurrentThread.ManagedThreadId.ToString()}");
                 Resolved.Add(n, 1);
                 return 1;
             }
             // Context перезаписывается, нет блокировки для своего потока
             var value = n * CalculateFactorial(n - 1, 1);
-            _testOutputHelper.WriteLine(
-                $"Value: {value}, resolved by ThreadId:{Thread.CurrentThread.ManagedThreadId.ToString()}");
+            _testOutputHelper.WriteLine($"Value: {value}, resolved by ThreadId:{Thread.CurrentThread.ManagedThreadId.ToString()}");
             Resolved.Add(n, value);
             return value;
         }

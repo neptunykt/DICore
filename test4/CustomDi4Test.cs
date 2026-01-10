@@ -2,11 +2,17 @@
 using DICore4.Abstractions;
 using TestClasses;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace test4;
 
     public class CustomDi4Test
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+        public CustomDi4Test(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
         [Fact]
         private void CreateServiceByServiceProviderTest()
         {
@@ -44,5 +50,51 @@ namespace test4;
         var fooFromTransient2 = serviceTransientProvider.GetService<IFoo>();
         Assert.False(ReferenceEquals(fooFromTransient1, fooFromTransient2));
 
+        }
+        
+        [Fact]
+        private void CreateDriveObject()
+        {
+            var serviceScopedCollection = new ServiceCollection();
+            serviceScopedCollection.AddScoped<IMovable, Movable>();
+            serviceScopedCollection.AddScoped<ICar, Car>();
+            var serviceProvider = serviceScopedCollection.BuildServiceProvider();
+            var scope1 = serviceProvider.CreateScope();
+            var car = scope1.ServiceProvider.GetService<ICar>();
+            car.Drive();
+        }
+        
+        
+        internal interface IMovable
+        {
+            void Move();
+
+        }
+
+        internal class Movable : IMovable
+        {
+            public void Move()
+            {
+                System.Diagnostics.Debug.WriteLine("Hello");
+            }
+        }
+
+        internal interface ICar
+        {
+            public void Drive();
+        }
+
+        internal class Car : ICar
+        {
+            private readonly IMovable _movable;
+            public Car(IMovable movable)
+            {
+                _movable = movable;
+            }
+
+            public void Drive()
+            {
+                _movable.Move();
+            }
         }
     }

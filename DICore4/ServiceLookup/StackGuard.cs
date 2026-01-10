@@ -53,12 +53,16 @@ namespace DICore4.ServiceLookup;
             try
             {
                 // Using default scheduler rather than picking up the current scheduler.
+                // TaskScheduler.FromCurrentSynchronizationContext()
+                // (который в главном потоке WPF и WinForms создают scheduler, выполняющий задания в этом самом потоке)
+                // поэтому выбирается таким образом
                 Task<R> task = Task.Factory.StartNew((Func<object?, R>)action, state, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
                 // Avoid AsyncWaitHandle lazy allocation of ManualResetEvent in the rare case we finish quickly.
                 if (!task.IsCompleted)
                 {
                     // Task.Wait has the potential of inlining the task's execution on the current thread; avoid this.
+                    // Task.Wait потенциально может привести к встраиванию выполнения задачи в текущий поток; избегайте этого.
                     ((IAsyncResult)task).AsyncWaitHandle.WaitOne();
                 }
 

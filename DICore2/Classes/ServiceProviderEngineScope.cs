@@ -3,7 +3,7 @@ using IServiceProvider = DICore2.Abstractions.IServiceProvider;
 
 namespace DICore2.Classes;
 
-internal class ServiceProviderEngineScope : IServiceScope, IServiceProvider, IServiceScopeFactory
+public class ServiceProviderEngineScope : IServiceScope, IServiceProvider, IServiceScopeFactory
 {
     internal ServiceProviderEngineScope(ServiceProvider serviceProvider, bool isRootScope)
     {

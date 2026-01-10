@@ -80,6 +80,12 @@ internal sealed class CallSiteRuntimeResolver : CallSiteVisitor<RuntimeResolverC
                 resolved = VisitCallSiteMain(callSite, new RuntimeResolverContext
                 {
                     Scope = serviceProviderEngine,
+                    // побитовая операция (скадывается каждый бит)
+                    // int x2 = 4; //100
+                    // int y2 = 5;//101
+                    // x2 | y2
+                    // ответ 101 (5)
+                    // пересчитывается на рекурсии
                     AcquiredLocks = context.AcquiredLocks | lockType
                 });
                 serviceProviderEngine.CaptureDisposable(resolved);

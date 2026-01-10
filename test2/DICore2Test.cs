@@ -16,13 +16,18 @@ public class DICore2Test
         var serviceProvider = serviceScopedCollection.BuildServiceProvider();
         var scope1 = serviceProvider.CreateScope();
         var scope2 = serviceProvider.CreateScope();
+        var innerScope = ((ServiceProviderEngineScope)scope1).CreateScope();
         var fooFromScope1 = scope1.ServiceProvider.GetService<IFoo>();
         var fooFromScope2 = scope2.ServiceProvider.GetService<IFoo>();
         var fooFromServiceProvider = serviceProvider.GetService<IFoo>();
+        var fooFromInnerScope = innerScope.ServiceProvider.GetService<IFoo>();
+        
         // Assert (У каждого свой скоуп)
         Assert.False(ReferenceEquals(fooFromScope1, fooFromScope2));
         Assert.False(ReferenceEquals(fooFromServiceProvider, fooFromScope1));
         Assert.False(ReferenceEquals(fooFromServiceProvider, fooFromScope2));
+        // внутренний скоуп
+        Assert.False(ReferenceEquals(fooFromScope1, fooFromInnerScope));
 
         var serviceSingletonCollection = new ServiceCollection();
         serviceSingletonCollection.AddSingleton<IBaz, Baz>();

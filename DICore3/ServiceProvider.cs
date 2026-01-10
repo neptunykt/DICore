@@ -46,10 +46,7 @@ public class ServiceProvider : IServiceProvider
             throw new ObjectDisposedException("ThrowHelper.ThrowObjectDisposedException())");
         }
         ServiceAccessor serviceAccessor = _serviceAccessors.GetOrAdd(serviceIdentifier, _createServiceAccessor);
-        //  OnResolve(serviceAccessor.CallSite, serviceProviderEngineScope);
-        //  DependencyInjectionEventSource.Log.ServiceResolved(this, serviceIdentifier.ServiceType);
         object? result = serviceAccessor.RealizedService?.Invoke(serviceProviderEngineScope);
-        //  System.Diagnostics.Debug.Assert(result is null || CallSiteFactory.IsService(serviceIdentifier));
         return result;
     }
 

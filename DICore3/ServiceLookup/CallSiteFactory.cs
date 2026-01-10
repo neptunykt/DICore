@@ -12,14 +12,18 @@ internal sealed class CallSiteFactory : IServiceProviderIsService
 
     private readonly ServiceDescriptor[] _descriptors;
 
-    // Хранилище ServiceCallSite
-    private readonly ConcurrentDictionary<ServiceCacheKey, ServiceCallSite> _callSiteCache =
-        new ConcurrentDictionary<ServiceCacheKey, ServiceCallSite>();
-
     // Хранилище Service дескрипторов ServiceDescriptorCacheItem это List ServiceIdentifier с Enumerable
+    // Быстрый словарь вызывается один раз при вызове BuildServiceProvider
+    // Он сопоставляет тип сервиса (например, IService) с его регистрацией (ServiceDescriptor),
+    // в которой указано, какой класс (ImplementationType) нужно создать.
     private readonly Dictionary<ServiceIdentifier, ServiceDescriptorCacheItem> _descriptorLookup =
         new Dictionary<ServiceIdentifier, ServiceDescriptorCacheItem>();
-
+    // Хранилище ServiceCallSite
+    // Готовый план сборки (Кеш планов)
+    private readonly ConcurrentDictionary<ServiceCacheKey, ServiceCallSite> _callSiteCache =
+        new ConcurrentDictionary<ServiceCacheKey, ServiceCallSite>();
+    
+    // Синхронизация
     private readonly ConcurrentDictionary<ServiceIdentifier, object> _callSiteLocks =
         new ConcurrentDictionary<ServiceIdentifier, object>();
 

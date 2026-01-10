@@ -7,13 +7,13 @@ namespace test4;
 public class ServiceProviderCompilationTest
 {
     [Theory]
-    [InlineData(ServiceProviderMode.Dynamic, typeof(I625))]
-    [InlineData(ServiceProviderMode.Runtime, typeof(I625))]
-    [InlineData(ServiceProviderMode.Expressions, typeof(I625))]
+    [InlineData(ServiceProviderMode.Dynamic, typeof(I999))]
+    [InlineData(ServiceProviderMode.Runtime, typeof(I999))]
+    [InlineData(ServiceProviderMode.Expressions, typeof(I999))]
     private async Task CompilesInLimitedStackSpace(ServiceProviderMode mode, Type serviceType)
     {
         // Arrange
-        var stackSize = 1024;
+        var stackSize = 256*1024;
         var serviceCollection = new ServiceCollection();
         CompilationTestDataProvider.Register(serviceCollection);
         var serviceProvider = serviceCollection.BuildServiceProvider(mode);

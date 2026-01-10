@@ -4,7 +4,7 @@ namespace DICore3.ServiceLookup;
 
   internal sealed class StackGuard
     {
-        private const int MaxExecutionStackCount = 1024;
+        private const int MaxExecutionStackCount = 16;
 
         private int _executionStackCount;
 
