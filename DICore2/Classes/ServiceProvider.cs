@@ -61,7 +61,7 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
                 return GetServiceByReflection(type);
         }
     }
-
+    
     private object? GetServiceByReflection(Type type)
     {
         var constructor = GetConstructor(type);

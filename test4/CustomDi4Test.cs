@@ -21,8 +21,10 @@ namespace test4;
         serviceScopedCollection.AddScoped<IFoo, Foo>();
         serviceScopedCollection.AddScoped<IBar, Bar>();
         var serviceProvider = serviceScopedCollection.BuildServiceProvider();
+        // вернется IServiceScope
         var scope1 = serviceProvider.CreateScope();
         var scope2 = serviceProvider.CreateScope();
+        // У IServiceScope есть поле ServiceProvider (типа IServiceProvider) у которого есть метод GetService
         var fooFromScope1 = scope1.ServiceProvider.GetService<IFoo>();
         var bazFromScope1 = scope1.ServiceProvider.GetService<IBaz>();
         var bazFromScope2 = scope2.ServiceProvider.GetService<IBaz>();
