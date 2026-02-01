@@ -24,7 +24,7 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
         return GetService(serviceType, Root);
     }
 
-    internal object? GetService(Type serviceType, ServiceProviderEngineScope serviceProviderEngineScope)
+    internal object? GetService(Type serviceType, ServiceProviderEngineScope scope)
     {
         Type type;
         // Если не найдено в справочнике - поиск неоптимален (пропущены хранилища типов в других классах, только для примера)
@@ -40,29 +40,29 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
         switch (descriptor.Lifetime)
         {
             case ServiceLifetime.Scoped:
-                if (serviceProviderEngineScope.ResolvedServices.TryGetValue(descriptor, out object? scopedValue))
+                if (scope.ResolvedServices.TryGetValue(descriptor, out object? scopedValue))
                 {
                     return scopedValue;
                 }
 
-                var scopedObj = GetServiceByReflection(type);
-                serviceProviderEngineScope.ResolvedServices.Add(descriptor, scopedObj);
+                var scopedObj = GetServiceByReflection(type, scope);
+                scope.ResolvedServices.Add(descriptor, scopedObj!);
                 return scopedObj;
             case ServiceLifetime.Transient:
-                return GetServiceByReflection(type);
+                return GetServiceByReflection(type, scope);
             default:
                 if (ResolvedServices.TryGetValue(descriptor, out object? singletonValue))
                 {
                     return singletonValue;
                 }
 
-                var singletonObj = GetServiceByReflection(type);
-                ResolvedServices.Add(descriptor, singletonObj);
+                var singletonObj = GetServiceByReflection(type, scope);
+                ResolvedServices.Add(descriptor, singletonObj!);
                 return singletonObj;
         }
     }
     
-    private object? GetServiceByReflection(Type type)
+    private object? GetServiceByReflection(Type type, ServiceProviderEngineScope scope)
     {
         var constructor = GetConstructor(type);
         if (constructor == null)
@@ -71,11 +71,11 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
         }
 
         // Первый конструктор помеченный артибутом
-        object[] arguments = constructor.GetParameters()
+        var arguments = constructor.GetParameters()
             // рекурурсия по параметру
-            .Select(p => GetService(p.ParameterType)).ToArray();
+            .Select(p => GetService(p.ParameterType, scope)).ToArray();
         // Создаем объект
-        object service = constructor.Invoke(arguments);
+        var service = constructor.Invoke(arguments);
         return service;
     }
 
