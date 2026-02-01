@@ -58,7 +58,7 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
 
                 var singletonObj = GetServiceByReflection(type);
                 ResolvedServices.Add(descriptor, singletonObj);
-                return GetServiceByReflection(type);
+                return singletonObj;
         }
     }
     
