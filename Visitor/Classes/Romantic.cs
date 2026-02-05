@@ -2,13 +2,17 @@ using Visitor.Interfaces;
 
 namespace Visitor.Classes;
 
-// Конкретный посетитель: Романтик
 public class Romantic : IVisitor
 {
-    public void Visit(Beauty beauty)
+    public void Visit(Barbie barbie)
     {
         Console.WriteLine("А это ты дорогая?");
-            Console.WriteLine($"{beauty.Name} слушает стихи под луной и получает букет полевых цветов.");
+        Console.WriteLine($"Романтик читает стихи {barbie.Name} под луной.");
+    }
 
+    public void Visit(Smarty smarty)
+    {
+        Console.WriteLine("Привет, умная девушка.");
+       Console.WriteLine($"Романтик обсуждает с {smarty.Name} квантовую физику.");
     }
 }

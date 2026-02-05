@@ -1,3 +1,4 @@
+
 using Visitor.Classes;
 
 namespace Visitor.Interfaces;
@@ -6,5 +7,7 @@ namespace Visitor.Interfaces;
 // интерфейс посетителя
 public interface IVisitor
 {
-    void Visit(Beauty beauty);
+    void Visit(Barbie barbie);
+    void Visit(Smarty smarty);
+
 }

@@ -4,8 +4,7 @@ using Visitor.Classes;
 using Visitor.Interfaces;
 
 var visitors = new List<IVisitor>();
-var beauty = new Beauty();
-visitors.Add(new Romantic());
+var beauty = new Barbie();
 visitors.Add(new SugarDaddy());
 // Обход посетителей
 foreach (var visitor in visitors)

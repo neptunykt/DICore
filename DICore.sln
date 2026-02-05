@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test4", "test4\test4.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visitor", "Visitor\Visitor.csproj", "{C4236959-F8FA-4225-864A-67484171D51C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisitorSwitch", "VisitorSwitch\VisitorSwitch.csproj", "{15F490CD-8427-493D-A46A-837BBCC213BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Closure", "Closure\Closure.csproj", "{6E4D2C77-1263-4F42-BDD6-5263253BF06F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +78,14 @@ Global
 		{C4236959-F8FA-4225-864A-67484171D51C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4236959-F8FA-4225-864A-67484171D51C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4236959-F8FA-4225-864A-67484171D51C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F490CD-8427-493D-A46A-837BBCC213BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F490CD-8427-493D-A46A-837BBCC213BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F490CD-8427-493D-A46A-837BBCC213BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F490CD-8427-493D-A46A-837BBCC213BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E4D2C77-1263-4F42-BDD6-5263253BF06F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E4D2C77-1263-4F42-BDD6-5263253BF06F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E4D2C77-1263-4F42-BDD6-5263253BF06F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E4D2C77-1263-4F42-BDD6-5263253BF06F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4630B666-6229-4002-8038-3B6CED21054F} = {D1D37B5F-A9ED-4370-94D2-3ED66A0894C4}
