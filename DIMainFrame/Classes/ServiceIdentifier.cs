@@ -2,8 +2,6 @@ namespace DIMainFrame.Classes;
 
 public class ServiceIdentifier : IEquatable<ServiceIdentifier>
 {
-    
-    
     public Type ServiceType { get; set; }
     public bool Equals(ServiceIdentifier other)
     {

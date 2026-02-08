@@ -1,6 +1,7 @@
 using System.Collections;
+using DICore3.Abstractions;
 
-namespace DICore3.Abstractions;
+namespace DICore3.Classes;
 
 public class ServiceCollection : IServiceCollection
 {
@@ -62,5 +63,4 @@ public class ServiceCollection : IServiceCollection
         get => _descriptors[index];
         set => _descriptors[index] = value;
     }
-    
 }

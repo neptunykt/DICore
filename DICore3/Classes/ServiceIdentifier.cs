@@ -1,26 +1,15 @@
 using DICore3.Abstractions;
 
-namespace DICore3.ServiceLookup;
+namespace DICore3.Classes;
 
-internal readonly struct ServiceIdentifier: IEquatable<ServiceIdentifier>
+public class ServiceIdentifier: IEquatable<ServiceIdentifier>
 {
-
-    public Type ServiceType { get; }
-
     public ServiceIdentifier(Type serviceType)
     {
         ServiceType = serviceType;
     }
-        
-
-    public static ServiceIdentifier FromDescriptor(ServiceDescriptor serviceDescriptor)
-        => new ServiceIdentifier(serviceDescriptor.ServiceType);
-
-    public static ServiceIdentifier FromServiceType(Type type)
-    {
-        return new ServiceIdentifier(type);
-    }
-
+    
+    public Type ServiceType { get; set; }
     public bool Equals(ServiceIdentifier other)
     {
         return ServiceType == other.ServiceType;
@@ -42,5 +31,13 @@ internal readonly struct ServiceIdentifier: IEquatable<ServiceIdentifier>
     {
         return ServiceType.ToString();
 
+    }
+    
+    public static ServiceIdentifier FromDescriptor(ServiceDescriptor serviceDescriptor)
+        => new ServiceIdentifier(serviceDescriptor.ServiceType);
+
+    public static ServiceIdentifier FromServiceType(Type type)
+    {
+        return new ServiceIdentifier(type);
     }
 }
