@@ -2,7 +2,7 @@ using DICore3.Abstractions;
 
 namespace DICore3.Classes;
 
-public class ServiceIdentifier: IEquatable<ServiceIdentifier>
+public struct ServiceIdentifier: IEquatable<ServiceIdentifier>
 {
     public ServiceIdentifier(Type serviceType)
     {
