@@ -6,7 +6,7 @@ public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScop
     public static CallSiteRuntimeResolver Instance = new CallSiteRuntimeResolver();
     protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
     {
-        if (constructorCallSite.ParameterCallSites == null || constructorCallSite.ParameterCallSites.Length == 0)
+        if (constructorCallSite.ParameterCallSites.Length == 0)
         {
             return constructorCallSite.ConstructorInfo.Invoke(null);
         }
@@ -37,7 +37,7 @@ public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScop
     // Получение Scoped
     protected override object VisitCache(ServiceCallSite callSite, ServiceProviderEngineScope scope)
     {
-        return scope.ResolvedServices.GetOrAdd(callSite, s => VisitCallSiteMain(callSite, scope));
+        return scope.ResolvedServices.GetOrAdd(callSite, key => VisitCallSiteMain(callSite, scope));
     }
     
     protected override object VisitNoCache(ServiceCallSite callSite, ServiceProviderEngineScope scope)
