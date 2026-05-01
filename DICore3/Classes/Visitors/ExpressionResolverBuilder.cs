@@ -130,11 +130,4 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
         // Для Transient: просто создаем новый экземпляр
         return VisitCallSiteMain(callSite, scope);
     }
-
-    // Этот метод используется базовым классом для вызова VisitConstructor
-    protected override object VisitCallSiteMain(ServiceCallSite callSite, ParameterExpression scope)
-    {
-        // Создаем выражение для создания сервиса
-        return base.VisitCallSiteMain(callSite, scope);
-    }
 }
