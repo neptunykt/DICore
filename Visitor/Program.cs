@@ -3,12 +3,15 @@
 using Visitor.Classes;
 using Visitor.Interfaces;
 
-var visitors = new List<IVisitor>();
-var beauty = new Barbie();
-visitors.Add(new SugarDaddy());
-// Обход посетителей
-foreach (var visitor in visitors)
+var girls = new List<Girl> { new Barbie(), new Smarty() };
+var visitors = new List<IVisitor>
 {
-    // Барби принимает разных посетителей
-    beauty.Accept(visitor);
+    new Romantic(),
+    new SugarDaddy()
+};
+// Обход посетителей
+foreach (var girl in girls) {
+    foreach (var visitor in visitors) {
+        girl.Accept(visitor);
+    }
 }

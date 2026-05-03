@@ -10,14 +10,12 @@ public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScop
         {
             return constructorCallSite.ConstructorInfo.Invoke(null);
         }
-
         var parameterValues = new List<object>();
         foreach (var dependency in constructorCallSite.ParameterCallSites)
         {
             var value = VisitCallSite(dependency, scope);
             parameterValues.Add(value);
         }
-        // 2. Вызываем конструктор (в демо - через упрощенную рефлексию)
         return constructorCallSite.ConstructorInfo.Invoke(parameterValues.ToArray());
     }
     // Получение Синглтона

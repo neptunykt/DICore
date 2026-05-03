@@ -35,7 +35,7 @@ public class DynamicServiceProviderEngine : CompiledServiceProviderEngine
         };
     }
 
-    public DynamicServiceProviderEngine(ServiceProvider serviceProvider) : base(serviceProvider)
+    public DynamicServiceProviderEngine(ServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }

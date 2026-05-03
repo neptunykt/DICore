@@ -5,12 +5,6 @@ namespace DICore3.Classes.Visitors;
 
 public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
 {
-    private readonly ServiceProvider _serviceProvider;
-    
-    public ExpressionResolverBuilder(ServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
     {
@@ -24,25 +18,18 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
     {
         // Собираем параметры конструктора
         Expression[] parameters;
-        if (constructorCallSite.ParameterCallSites != null)
+        parameters = new Expression[constructorCallSite.ParameterCallSites.Length];
+        for (int i = 0; i < constructorCallSite.ParameterCallSites.Length; i++)
         {
-            parameters = new Expression[constructorCallSite.ParameterCallSites.Length];
-            for (int i = 0; i < constructorCallSite.ParameterCallSites.Length; i++)
+            var paramCallSite = constructorCallSite.ParameterCallSites[i];
+            var paramExpression = (Expression)VisitCallSite(paramCallSite, scope);
+            // Приводим к нужному типу параметра конструктора
+            var constructorParamType = constructorCallSite.ConstructorInfo.GetParameters()[i].ParameterType;
+            if (paramExpression.Type != constructorParamType)
             {
-                var paramCallSite = constructorCallSite.ParameterCallSites[i];
-                var paramExpression = (Expression)VisitCallSite(paramCallSite, scope);
-                // Приводим к нужному типу параметра конструктора
-                var constructorParamType = constructorCallSite.ConstructorInfo.GetParameters()[i].ParameterType;
-                if (paramExpression.Type != constructorParamType)
-                {
-                    paramExpression = Expression.Convert(paramExpression, constructorParamType);
-                }
-                parameters[i] = paramExpression;
+                paramExpression = Expression.Convert(paramExpression, constructorParamType);
             }
-        }
-        else
-        {
-            parameters = Array.Empty<Expression>();
+            parameters[i] = paramExpression;
         }
 
         // Создаем выражение new T(param1, param2, ...)
@@ -57,9 +44,6 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
         // Для Singleton: проверяем кэш в callSite.Value, если нет - создаем и сохраняем
         var callSiteConstant = Expression.Constant(callSite);
         var valueField = Expression.Field(callSiteConstant, nameof(ServiceCallSite.Value));
-        
-        // Сохраняем значение во временную переменную для double-check locking
-        var tempVar = Expression.Variable(typeof(object), "cachedValue");
         
         // Проверяем, не null ли уже значение
         var checkNotNull = Expression.NotEqual(valueField, Expression.Constant(null, typeof(object)));
