@@ -5,7 +5,7 @@ namespace DICore3.Classes.Engines;
 public abstract class CompiledServiceProviderEngine : ServiceProviderEngine
 {
 
-    public ExpressionResolverBuilder ResolverBuilder { get; }
+    public ExpressionResolverBuilder ResolverBuilder { get; } = new ExpressionResolverBuilder();
 
     
 

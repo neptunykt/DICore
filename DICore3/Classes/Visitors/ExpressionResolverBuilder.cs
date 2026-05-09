@@ -43,41 +43,39 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
     {
         // Для Singleton: проверяем кэш в callSite.Value, если нет - создаем и сохраняем
         var callSiteConstant = Expression.Constant(callSite);
+        // получаем доступ к полю
         var valueField = Expression.Field(callSiteConstant, nameof(ServiceCallSite.Value));
-        
         // Проверяем, не null ли уже значение
         var checkNotNull = Expression.NotEqual(valueField, Expression.Constant(null, typeof(object)));
-        
         // Если не null, возвращаем его
         var returnCached = Expression.Convert(valueField, typeof(object));
-        
         // Если null, создаем через VisitCallSiteMain
         var lockObject = Expression.Constant(callSite);
         var createNew = (Expression)VisitCallSiteMain(callSite, scope);
-        
-        // Блок для создания с double-check locking
+        // Блок для формирования группы из нескольких выражений
         var lockCreateNew = Expression.Block(
-            // Входим в lock
+            // Первое выражение в блоке Входим в lock 
             Expression.Call(typeof(Monitor), "Enter", null, lockObject),
+            // Второе выражение в блоке
             Expression.TryFinally(
-                Expression.Block(
-                    // Double-check после входа в lock
+                    // Вторая проверка на null (тело try)
                     Expression.IfThen(
-                        Expression.Equal(valueField, Expression.Constant(null, typeof(object))),
-                        Expression.Assign(valueField, createNew)
-                    )
-                ),
+                        Expression.Equal(valueField, Expression.Constant(null, typeof(object))), // Выражение Условие
+                        Expression.Assign(valueField, createNew)                                 // ВЫражение в случае истина
+                    ),
+                    // тело finally (выполнится до того как будет исключение)
+                    // исключения пробрасываются наверх, здесь не перехватываются
                 Expression.Call(typeof(Monitor), "Exit", null, lockObject)
             ),
-            // Возвращаем значение
+            // Третье выражение в блоке
             Expression.Convert(valueField, typeof(object))
         );
-
+        // Третье выражение в блоке
         return Expression.Condition(
-            checkNotNull,
-            returnCached,
-            lockCreateNew,
-            typeof(object)
+            checkNotNull,   // проверяемое выражение
+            returnCached,   // выражение если истина
+            lockCreateNew,  // выражение если ложь
+            typeof(object)  // тип значения которое будет возвращено в случае истина и ложь
         );
     }
 
