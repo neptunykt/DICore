@@ -63,14 +63,14 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
                         Expression.Equal(valueField, Expression.Constant(null, typeof(object))), // Выражение Условие
                         Expression.Assign(valueField, createNew)                                 // ВЫражение в случае истина
                     ),
-                    // тело finally (выполнится до того как будет исключение)
-                    // исключения пробрасываются наверх, здесь не перехватываются
+                // Если в try (при создании объекта) вылетело исключение — выполнение прервется,
+                // мгновенно выполнится finally (отпустит замок), и только потом ошибка полетит дальше «наверх».
                 Expression.Call(typeof(Monitor), "Exit", null, lockObject)
             ),
             // Третье выражение в блоке
             Expression.Convert(valueField, typeof(object))
         );
-        // Третье выражение в блоке
+        // Возврат выражения
         return Expression.Condition(
             checkNotNull,   // проверяемое выражение
             returnCached,   // выражение если истина
