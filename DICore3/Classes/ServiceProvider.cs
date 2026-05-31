@@ -46,7 +46,7 @@ public class ServiceProvider : IServiceProvider, IServiceScopeFactory
             {
              // Вызываем создание напрямую в обход счетчика
              return new ServiceAccessor
-                 { CallSite = callSite, RealizedService = sc =>  CallSiteRuntimeResolver.Instance.VisitCallSite(callSite, sc) };
+                 { CallSite = callSite, RealizedService = sc =>  CallSiteRuntimeResolver.Instance.Resolve(callSite, sc) };
             }
             var realizedService =  _engine.Realize(callSite);
           return new ServiceAccessor { CallSite = callSite, RealizedService = realizedService };
