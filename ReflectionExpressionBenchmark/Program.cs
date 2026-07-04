@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Linq.Expressions;
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
@@ -11,65 +12,43 @@ BenchmarkRunner.Run<ObjectCreationBenchmark>();
 [RankColumn]
 public class ObjectCreationBenchmark
 {
-    private readonly Func<int, string, int, Person> _expressionFactory;
+    private ConstructorInfo _ctor { get; set; }
+    private Func<int, string, int, Person> _compiled { get; set; }
 
-    public ObjectCreationBenchmark()
+    [GlobalSetup]
+    public void Setup()
     {
+        _ctor = typeof(Person).GetConstructor(new[] { typeof(int), typeof(string), typeof(int) });
         
-        // 1. Создаем скомпилированное дерево выражений для конструктора с параметрами
-        // Создаем ParameterExpression-ы для конструктора
         var idParam = Expression.Parameter(typeof(int), "id");
         var nameParam = Expression.Parameter(typeof(string), "name");
         var ageParam = Expression.Parameter(typeof(int), "age");
-        // получаем конструктор constructorWithArgs типа ConstructorInfo
-        var constructorWithArgs = typeof(Person).GetConstructor(new[]
-        {
-            typeof(int),
-            typeof(string),
-            typeof(int)
-        });
-        // создаем выражение типа NewExpression
-        var newExpression = Expression.New(
-            constructorWithArgs!,
-            idParam,
-            nameParam,
-            ageParam
-        );
-        // создаем лямбду для выражения (создание узла дерева выражений)
+        
+        var newExpr = Expression.New(_ctor, idParam, nameParam, ageParam);
         var lambda = Expression.Lambda<Func<int, string, int, Person>>(
-            newExpression,
-            idParam,
-            nameParam,
-            ageParam
-        );
-        // создаем делегат из лямбды
-        _expressionFactory = lambda.Compile();
+            newExpr, idParam, nameParam, ageParam);
+        _compiled = lambda.Compile();
     }
 
-    // 1. Прямое создание (new) - базовый метод
     [Benchmark(Baseline = true)]
-    public Person DirectCreation()
+    public Person DirectNew()
     {
-        return new Person(1, "John Doe", 30);
+      return  new Person(1000, "John Doe", 3000);
     }
-    // 2. Рефлексия
+
     [Benchmark]
-    public Person ConstructorInfoInvoke()
+    public object Reflection()
     {
-        var constructor = typeof(Person).GetConstructor(
-            new[] { typeof(int), typeof(string), typeof(int) }
-        );
-
-        return (Person)constructor!.Invoke(new object[] { 1, "John Doe", 30 });
+        return _ctor.Invoke(new object[] { 1000, "John Doe", 3000 });
     }
 
-    // 3. Expression Tree (скомпилированное)
     [Benchmark]
     public Person ExpressionTree()
     {
-        return _expressionFactory(1, "John Doe", 30);
+
+        return _compiled(1000, "John Doe", 3000);
     }
-    
+
 }
 
 public class Person
@@ -89,5 +68,8 @@ public class Person
         Age = age;
     }
 
-    public override string ToString() => $"Person[{Id}: {Name}, {Age} лет]";
+    public override string ToString()
+    {
+      return  $"Person[{Id}: {Name}, {Age} лет]";
+    }
 }
