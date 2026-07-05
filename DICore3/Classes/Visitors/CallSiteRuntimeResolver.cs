@@ -2,7 +2,6 @@ namespace DICore3.Classes.Visitors;
 
 public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScope>
 {
-    private readonly object _lock = new object();
     public static CallSiteRuntimeResolver Instance = new CallSiteRuntimeResolver();
     protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProviderEngineScope scope)
     {
@@ -21,13 +20,25 @@ public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScop
     // Получение Синглтона
     protected override object VisitRootCache(ServiceCallSite callSite, ServiceProviderEngineScope scope)
     {
+        
+        // Fast path - первая проверка без лока
         if (callSite.Value != null) return callSite.Value;
 
-        lock (_lock)
+        // ВАЖНО: Лочим именно callSite, а не отдельный объект!
+        // Это позволяет избежать конфликтов между разными синглтонами
+        lock (callSite)
         {
+            // Вторая проверка под локом (Double-Checked Locking)
             if (callSite.Value == null)
             {
-                callSite.Value = VisitCallSiteMain(callSite, scope);
+                // Создаем объект
+                var resolved = VisitCallSiteMain(callSite, scope);
+                
+                // ВАЖНО: Добавляем в _disposables КОРНЕВОГО скоупа!
+                scope.RootProvider.Root.CaptureDisposable(resolved);
+                
+                // Сохраняем в callSite.Value
+                callSite.Value = resolved;
             }
             return callSite.Value;
         }
@@ -35,12 +46,21 @@ public class CallSiteRuntimeResolver : CallSiteVisitor<ServiceProviderEngineScop
     // Получение Scoped
     protected override object VisitCache(ServiceCallSite callSite, ServiceProviderEngineScope scope)
     {
-        return scope.ResolvedServices.GetOrAdd(callSite, key => VisitCallSiteMain(callSite, scope));
+        return scope.ResolvedServices.GetOrAdd(callSite, key =>
+        {
+            var resolved = VisitCallSiteMain(callSite, scope);
+            // Добавляем в _disposables ТЕКУЩЕГО скоупа
+            scope.CaptureDisposable(resolved);
+            return resolved;
+        });
     }
     
     protected override object VisitNoCache(ServiceCallSite callSite, ServiceProviderEngineScope scope)
     {
-        return VisitCallSiteMain(callSite, scope);
+        var resolved = VisitCallSiteMain(callSite, scope);
+        // Для Transient тоже нужно трекировать disposable, если скоуп еще не диспознут
+        scope.CaptureDisposable(resolved);
+        return resolved;
     }
     public object Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
     {

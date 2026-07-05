@@ -50,10 +50,27 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
         // Если не null, возвращаем его
         var returnCached = Expression.Convert(valueField, typeof(object));
         // Если null, создаем через VisitCallSiteMain
-        var lockObject = Expression.Constant(callSite);
         var createNew = (Expression)VisitCallSiteMain(callSite, scope);
+        
+        // Создаем переменную для хранения созданного объекта
+        var resolvedVar = Expression.Variable(typeof(object), "resolved");
+        // Присваиваем результат создания в переменную
+        var assignResolved = Expression.Assign(resolvedVar, createNew);
+        // Вызываем CaptureDisposable на корневом скоупе
+        var rootScopeProperty = Expression.Property(
+            Expression.Property(scope, "RootProvider"), 
+            "Root");
+        var captureDisposableCall = Expression.Call(
+            rootScopeProperty,
+            typeof(ServiceProviderEngineScope).GetMethod("CaptureDisposable")!,
+            resolvedVar);
+        // Сохраняем в callSite.Value
+        var assignToValue = Expression.Assign(valueField, resolvedVar);
+        // Блок для формирования группы из нескольких выражений
+        var lockObject = Expression.Constant(callSite);
         // Блок для формирования группы из нескольких выражений
         var lockCreateNew = Expression.Block(
+            new[] { resolvedVar }, // Объявляем переменную
             // Первое выражение в блоке Входим в lock 
             Expression.Call(typeof(Monitor), "Enter", null, lockObject),
             // Второе выражение в блоке
@@ -61,7 +78,11 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
                     // Вторая проверка на null (тело try)
                     Expression.IfThen(
                         Expression.Equal(valueField, Expression.Constant(null, typeof(object))), // Выражение Условие
-                        Expression.Assign(valueField, createNew)                                 // ВЫражение в случае истина
+                        Expression.Block(
+                            assignResolved,           // resolved = createNew
+                            captureDisposableCall,    // scope.CaptureDisposable(resolved)
+                            assignToValue             // callSite.Value = resolved
+                        )
                     ),
                 // Если в try (при создании объекта) вылетело исключение — выполнение прервется,
                 // мгновенно выполнится finally (отпустит замок), и только потом ошибка полетит дальше «наверх».
@@ -96,8 +117,19 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
         var keyParam = Expression.Parameter(typeof(ServiceCallSite), "key");
         var createServiceCall = (Expression)VisitCallSiteMain(callSite, scope);
         
+        // Создаем переменную для результата
+        var resolvedVar = Expression.Variable(typeof(object), "resolved");
+        
+        // Блок: создаем объект, вызываем CaptureDisposable, возвращаем
+        var createBlock = Expression.Block(
+            new[] { resolvedVar },
+            Expression.Assign(resolvedVar, createServiceCall),
+            Expression.Call(scope, typeof(ServiceProviderEngineScope).GetMethod("CaptureDisposable")!, resolvedVar),
+            resolvedVar
+        );
+        
         var createLambda = Expression.Lambda<Func<ServiceCallSite, object>>(
-            createServiceCall,
+            createBlock,
             keyParam);
         
         return Expression.Call(
@@ -110,6 +142,17 @@ public class ExpressionResolverBuilder : CallSiteVisitor<ParameterExpression>
     protected override object VisitNoCache(ServiceCallSite callSite, ParameterExpression scope)
     {
         // Для Transient: просто создаем новый экземпляр
-        return VisitCallSiteMain(callSite, scope);
+        var createServiceCall = (Expression)VisitCallSiteMain(callSite, scope);
+        
+        // Создаем переменную для результата
+        var resolvedVar = Expression.Variable(typeof(object), "resolved");
+        
+        // Блок: создаем объект, вызываем CaptureDisposable, возвращаем
+        return Expression.Block(
+            new[] { resolvedVar },
+            Expression.Assign(resolvedVar, createServiceCall),
+            Expression.Call(scope, typeof(ServiceProviderEngineScope).GetMethod("CaptureDisposable")!, resolvedVar),
+            resolvedVar
+        );
     }
 }

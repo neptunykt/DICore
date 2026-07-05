@@ -18,11 +18,50 @@ public class ServiceProviderEngineScope : IServiceProvider , IServiceScope, ISer
     }
     public ConcurrentDictionary<ServiceCallSite, object> ResolvedServices { get; } 
         = new ConcurrentDictionary<ServiceCallSite, object>();
+    // Список для отслеживания disposable объектов
+    private readonly List<object> _disposables = new List<object>();
+    private readonly object _disposablesLock = new object();
+    private bool _disposed;
+    
+    /// <summary>
+    /// Добавляет объект в список для отслеживания disposable.
+    /// Возвращает тот же объект для удобства цепочки вызовов.
+    /// </summary>
+    public object CaptureDisposable(object service)
+    {
+        if (service == null) return null;
+        
+        // Проверяем, реализует ли объект IDisposable или IAsyncDisposable
+        if (service is IDisposable || service is IAsyncDisposable)
+        {
+            lock (_disposablesLock)
+            {
+                if (!_disposed)
+                {
+                    _disposables.Add(service);
+                }
+            }
+        }
+        return service;
+    }
+    
     public void Dispose()
     {
-        foreach (var service in ResolvedServices.Values)
+        lock (_disposablesLock)
         {
-            (service as IDisposable)?.Dispose();
+            if (_disposed) return;
+            _disposed = true;
+
+            // Диспозим в обратном порядке (как в оригинале MS DI)
+            for (int i = _disposables.Count - 1; i >= 0; i--)
+            {
+                var disposable = _disposables[i];
+                if (disposable is IDisposable d)
+                {
+                    d.Dispose();
+                }
+            }
+            _disposables.Clear();
         }
     }
 
